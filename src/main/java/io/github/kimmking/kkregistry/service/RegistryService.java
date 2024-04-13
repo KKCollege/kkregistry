@@ -1,5 +1,6 @@
 package io.github.kimmking.kkregistry.service;
 
+import io.github.kimmking.kkregistry.cluster.Snapshot;
 import io.github.kimmking.kkregistry.model.InstanceMeta;
 
 import java.util.List;
@@ -23,4 +24,5 @@ public interface RegistryService {
     Long version(String service);
     Map<String, Long> versions(String... services);
 
+    Snapshot snapshot();
 }

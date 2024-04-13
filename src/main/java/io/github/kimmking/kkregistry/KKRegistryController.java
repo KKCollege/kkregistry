@@ -1,5 +1,8 @@
 package io.github.kimmking.kkregistry;
 
+import io.github.kimmking.kkregistry.cluster.Cluster;
+import io.github.kimmking.kkregistry.cluster.Server;
+import io.github.kimmking.kkregistry.cluster.Snapshot;
 import io.github.kimmking.kkregistry.model.InstanceMeta;
 import io.github.kimmking.kkregistry.service.RegistryService;
 import lombok.extern.slf4j.Slf4j;
@@ -76,10 +79,34 @@ public class KKRegistryController {
         return registryService.versions(services.split(","));
     }
 
-//    public static void main(String[] args) {
-//        InstanceMeta meta = InstanceMeta.http("127.0.0.1", 8081)
-//                .addParams(Map.of("env", "dev", "tag", "RED"));
-//        System.out.println(JSON.toJSONString(meta));
-//    }
+    @RequestMapping("/snapshot")
+    public Snapshot snapshot() {
+        log.info(" ===> snapshot");
+        return registryService.snapshot();
+    }
+
+
+    @Autowired Cluster cluster;
+    @RequestMapping("/cluster")
+    public List<Server> cluster() {
+        log.info(" ===> cluster");
+        return cluster.getServers();
+    }
+
+    @RequestMapping("/info")
+    public String info() {
+        return cluster.isLeader() ? "M" : "S";
+    }
+
+    @RequestMapping("/myself")
+    public Server myself() {
+        return cluster.myself();
+    }
+
+    @RequestMapping("/sm")
+    public Server setMaster() {
+        cluster.myself().setLeader(!cluster.isLeader());
+        return cluster.myself();
+    }
 
 }

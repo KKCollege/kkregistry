@@ -1,6 +1,9 @@
 ### 获取所有服务实例
 GET http://localhost:8484/findAll?service=io.github.kimmking.kkrpc.UserService
 
+### 获取快照
+GET http://localhost:8484/snapshot
+
 ### 注册一个实例
 POST http://localhost:8484/reg?service=io.github.kimmking.kkrpc.UserService
 Content-Type: application/json
@@ -28,3 +31,23 @@ Content-Type: application/json
   "port": 8081,
   "scheme": "http"
 }
+
+
+
+### 获取集群信息from 8484
+GET http://localhost:8484/cluster
+
+### 获取集群信息from 8485
+GET http://localhost:8485/cluster
+
+### 获取info信息
+GET http://localhost:8484/info
+
+### 获取myself信息 8484
+GET http://localhost:8484/myself
+
+### 获取myself信息 8485
+GET http://localhost:8485/myself
+
+### sm 8485
+GET http://localhost:8485/sm
