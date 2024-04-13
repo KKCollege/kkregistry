@@ -24,5 +24,6 @@ public interface RegistryService {
     Long version(String service);
     Map<String, Long> versions(String... services);
 
-    Snapshot snapshot();
+//    Snapshot snapshot();
+//    void restore(Snapshot snapshot);
 }

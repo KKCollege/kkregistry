@@ -4,6 +4,7 @@ import io.github.kimmking.kkregistry.cluster.Cluster;
 import io.github.kimmking.kkregistry.cluster.Server;
 import io.github.kimmking.kkregistry.cluster.Snapshot;
 import io.github.kimmking.kkregistry.model.InstanceMeta;
+import io.github.kimmking.kkregistry.service.KKRegistryService;
 import io.github.kimmking.kkregistry.service.RegistryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,7 +83,7 @@ public class KKRegistryController {
     @RequestMapping("/snapshot")
     public Snapshot snapshot() {
         log.info(" ===> snapshot");
-        return registryService.snapshot();
+        return KKRegistryService.snapshot();
     }
 
 

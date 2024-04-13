@@ -3,11 +3,8 @@ package io.github.kimmking.kkregistry.cluster;
 import io.github.kimmking.kkregistry.model.InstanceMeta;
 import lombok.Data;
 import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Snapshot for registry.
@@ -19,12 +16,12 @@ import java.util.concurrent.atomic.AtomicLong;
 @Data
 public class Snapshot {
 
-    final MultiValueMap<String, InstanceMeta> REGISTRY;
+    final LinkedMultiValueMap<String, InstanceMeta> REGISTRY;
     final Map<String, Long> VERSIONS;
     final Map<String, Long> TIMESTAMPS;
     final long version;
 
-    public Snapshot(MultiValueMap<String, InstanceMeta> registry,
+    public Snapshot(LinkedMultiValueMap<String, InstanceMeta> registry,
                     Map<String, Long> versions,
                     Map<String, Long> timestamps,
                     long version)

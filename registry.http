@@ -1,6 +1,9 @@
 ### 获取所有服务实例
 GET http://localhost:8484/findAll?service=io.github.kimmking.kkrpc.UserService
 
+### 获取所有服务实例 from 8485
+GET http://localhost:8485/findAll?service=io.github.kimmking.kkrpc.UserService
+
 ### 获取快照
 GET http://localhost:8484/snapshot
 

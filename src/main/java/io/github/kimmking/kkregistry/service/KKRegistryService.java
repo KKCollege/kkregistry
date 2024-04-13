@@ -4,7 +4,6 @@ import io.github.kimmking.kkregistry.cluster.Snapshot;
 import io.github.kimmking.kkregistry.model.InstanceMeta;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 import java.util.Arrays;
 import java.util.List;
@@ -23,10 +22,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public class KKRegistryService implements RegistryService {
 
-    final static MultiValueMap<String, InstanceMeta> REGISTRY = new LinkedMultiValueMap<>();
-    final static Map<String, Long> VERSIONS = new ConcurrentHashMap<>();
+    public final static LinkedMultiValueMap<String, InstanceMeta> REGISTRY = new LinkedMultiValueMap<>();
+    public final static Map<String, Long> VERSIONS = new ConcurrentHashMap<>();
     public final static Map<String, Long> TIMESTAMPS = new ConcurrentHashMap<>();
-    final static AtomicLong VERSION = new AtomicLong(0);
+    public final static AtomicLong VERSION = new AtomicLong(0);
 
 
     @Override
@@ -83,11 +82,22 @@ public class KKRegistryService implements RegistryService {
                 .collect(Collectors.toMap(x->x, VERSIONS::get, (a, b)->b));
     }
 
-    public synchronized Snapshot snapshot() {
-        MultiValueMap<String, InstanceMeta> registry = new LinkedMultiValueMap<>();
+    public static synchronized Snapshot snapshot() {
+        LinkedMultiValueMap<String, InstanceMeta> registry = new LinkedMultiValueMap<>();
         registry.addAll(REGISTRY);
         Map<String, Long> versions = new ConcurrentHashMap<>(VERSIONS);
         Map<String, Long> timestamps = new ConcurrentHashMap<>(TIMESTAMPS);
         return new Snapshot(registry, versions, timestamps, VERSION.get());
+    }
+
+    public static synchronized long restore(Snapshot snapshot) {
+        REGISTRY.clear();
+        REGISTRY.addAll(snapshot.getREGISTRY());
+        VERSIONS.clear();
+        VERSIONS.putAll(snapshot.getVERSIONS());
+        TIMESTAMPS.clear();
+        TIMESTAMPS.putAll(snapshot.getTIMESTAMPS());
+        VERSION.set(snapshot.getVersion());
+        return snapshot.getVersion();
     }
 }

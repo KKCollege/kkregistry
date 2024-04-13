@@ -1,7 +1,9 @@
 package io.github.kimmking.kkregistry.cluster;
 
+import com.alibaba.fastjson.JSON;
 import io.github.kimmking.kkregistry.RegistryConfigProperties;
 import io.github.kimmking.kkregistry.health.OkHttpInvoker;
+import io.github.kimmking.kkregistry.service.KKRegistryService;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +32,7 @@ public class Cluster {
 
     static String ip;
     Server MYSELF;
+//    Server LEADER;
 
     static {
         try {
@@ -59,34 +62,57 @@ public class Cluster {
         this.registryConfigProperties = registryConfigProperties;
     }
 
-    private void checkHealth() {
+    private void checkServerHealth() {
         final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         executor.scheduleAtFixedRate( () -> {
                     boolean isNeedElect = false;
                     for (Server server : servers) {
                         if(health(server)) isNeedElect = true;
                     }
-                    List<Server> masters = servers.stream().filter(Server::isStatus)
-                            .filter(Server::isLeader).collect(Collectors.toList());
-                    if(isNeedElect) {
-                        System.out.println(" =====>>>>>> isNeedElect : true and to check elect ...");
-                        if (masters.isEmpty()) {
-                            log.error(" =========>>>>> no master: {}", servers);
-                            elect();
-                        } else if (masters.size() > 1) {
-                            log.error(" =========>>>>> isNeedElect more than one master: {}", masters);
-                            elect();
-                        }
-                    } else {
-                        if (masters.size() > 1) {
-                            log.error(" =========>>>>> !isNeedElect more than one master: {}", masters);
-                            elect();
-                        } else {
-                            System.out.println(" =====>>>>>> isNeedElect : false and do not elect ...");
-                        }
+                    checkElect(isNeedElect);
+                    System.out.println(" ===*****%%%$$$>>> " + isLeader());
+                    if(!isLeader()) {
+                        System.out.println(" ===*****%%%$$$>>> syncFromLeader: " + getLeader());
+                        long v = syncFromLeader();
+                        System.out.println(" ===*****%%%$$$>>> sync from leader version: " + v);
                     }
                 }
                 , 0, 5, java.util.concurrent.TimeUnit.SECONDS);
+    }
+
+    private long syncFromLeader() {
+        try {
+            System.out.println(getLeader().getUrl() + "/snapshot");
+            String respJson = httpInvoker.post("", getLeader().getUrl() + "/snapshot");
+            System.out.println(" =====>>>>>> respJson: " + respJson);
+            Snapshot snapshot = JSON.parseObject(respJson, Snapshot.class);
+            return KKRegistryService.restore(snapshot);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return -1;
+    }
+
+    private void checkElect(boolean isNeedElect) {
+        List<Server> masters = servers.stream().filter(Server::isStatus)
+                .filter(Server::isLeader).collect(Collectors.toList());
+        if(isNeedElect) {
+            System.out.println(" =====>>>>>> isNeedElect : true and to check elect ..." + servers);
+            if (masters.isEmpty()) {
+                log.error(" =========>>>>> no master: {}", servers);
+                elect();
+            } else if (masters.size() > 1) {
+                log.error(" =========>>>>> isNeedElect more than one master: {}", masters);
+                elect();
+            }
+        } else {
+            if (masters.size() > 1) {
+                log.error(" =========>>>>> !isNeedElect more than one master: {}", masters);
+                elect();
+            } else {
+                System.out.println(" =====>>>>>> isNeedElect : false and do not elect ..." + servers);
+            }
+        }
     }
 
     private void elect() {
@@ -113,7 +139,8 @@ public class Cluster {
         System.out.println(" ======>>>> candidate = " + candidate);
         servers.forEach(server -> server.setLeader(false));
         candidate.setLeader(true);
-        System.out.println(" ======>>>> servers /elect = " + servers);
+//        LEADER = candidate;
+        System.out.println(" ======>>>> servers after elect = " + servers);
     }
 
     OkHttpInvoker httpInvoker = new OkHttpInvoker(1000);
@@ -159,11 +186,12 @@ public class Cluster {
             }
         }
         this.servers = servers;
-        checkHealth();
+        checkServerHealth();
     }
 
     public Server getLeader() {
-        return this.servers.stream().filter(Server::isStatus).filter(Server::isLeader).findFirst().orElse(null);
+        return this.servers.stream().filter(Server::isStatus)
+                    .filter(Server::isLeader).findFirst().orElse(null);
     }
 
     public boolean isLeader() {
@@ -172,5 +200,4 @@ public class Cluster {
         }
         return MYSELF.isLeader();
     }
-
 }
