@@ -27,55 +27,52 @@ import java.util.Map;
 @Slf4j
 public class KKRegistryController {
 
-    @Autowired
-    RegistryService registryService;
+    @Autowired RegistryService registryService;
+    @Autowired Cluster cluster;
 
     @RequestMapping("/reg")
-    public InstanceMeta register(@RequestParam String service, @RequestBody InstanceMeta instance)
-    {
+    public InstanceMeta register(@RequestParam String service, @RequestBody InstanceMeta instance) {
         log.info(" ===> register {} @ {}", service, instance);
+        checkLeader();
         return registryService.register(service, instance);
     }
 
     @RequestMapping("/unreg")
-    public InstanceMeta unregister(@RequestParam String service, @RequestBody InstanceMeta instance)
-    {
+    public InstanceMeta unregister(@RequestParam String service, @RequestBody InstanceMeta instance) {
         log.info(" ===> unregister {} @ {}", service, instance);
+        checkLeader();
         return registryService.unregister(service, instance);
     }
 
 
     @RequestMapping("/findAll")
-    public List<InstanceMeta> findAllInstances(@RequestParam String service)
-    {
+    public List<InstanceMeta> findAllInstances(@RequestParam String service) {
         log.info(" ===> findAllInstances {}", service);
         return registryService.getAllInstances(service);
     }
 
     @RequestMapping("/renew")
-    public long renew(@RequestParam String service, @RequestBody InstanceMeta instance)
-    {
+    public long renew(@RequestParam String service, @RequestBody InstanceMeta instance) {
         log.info(" ===> renew {} @ {}", service, instance);
+        checkLeader();
         return registryService.renew(instance, service);
     }
 
     @RequestMapping("/renews")
-    public long renews(@RequestParam String services, @RequestBody InstanceMeta instance)
-    {
+    public long renews(@RequestParam String services, @RequestBody InstanceMeta instance) {
         log.info(" ===> renew {} @ {}", services, instance);
+        checkLeader();
         return registryService.renew(instance, services.split(","));
     }
 
     @RequestMapping("/version")
-    public long version(@RequestParam String service)
-    {
+    public long version(@RequestParam String service) {
         log.info(" ===> version {}", service);
         return registryService.version(service);
     }
 
     @RequestMapping("/versions")
-    public Map<String, Long> versions(@RequestParam String services)
-    {
+    public Map<String, Long> versions(@RequestParam String services) {
         log.info(" ===> versions {}", services);
         return registryService.versions(services.split(","));
     }
@@ -86,8 +83,6 @@ public class KKRegistryController {
         return KKRegistryService.snapshot();
     }
 
-
-    @Autowired Cluster cluster;
     @RequestMapping("/cluster")
     public List<Server> cluster() {
         log.info(" ===> cluster");
@@ -95,8 +90,8 @@ public class KKRegistryController {
     }
 
     @RequestMapping("/info")
-    public String info() {
-        return cluster.isLeader() ? "M" : "S";
+    public Server info() {
+        return myself();
     }
 
     @RequestMapping("/myself")
@@ -108,6 +103,20 @@ public class KKRegistryController {
     public Server setMaster() {
         cluster.myself().setLeader(!cluster.isLeader());
         return cluster.myself();
+    }
+
+    @RequestMapping("/")
+    public List<Server> root() {
+        return cluster();
+    }
+
+    void checkLeader() {
+        if (!cluster.isLeader()) {
+            log.error("this server {} is readonly slave, leader {} is writable.",
+                    myself().getUrl(), cluster.getLeader().getUrl());
+            throw new RuntimeException("this server[" + myself().getUrl()
+                    +"] is a slave, can't be written.");
+        }
     }
 
 }

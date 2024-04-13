@@ -18,4 +18,5 @@ public class Server {
     private String url;
     private boolean leader;
     private boolean status;
+    private long version;
 }
