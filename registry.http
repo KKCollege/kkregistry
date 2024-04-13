@@ -1,0 +1,30 @@
+### 获取所有服务实例
+GET http://localhost:8484/findAll?service=io.github.kimmking.kkrpc.UserService
+
+### 注册一个实例
+POST http://localhost:8484/reg?service=io.github.kimmking.kkrpc.UserService
+Content-Type: application/json
+
+{
+  "context": "kkrpc",
+  "host": "127.0.0.1",
+  "port": 8081,
+  "scheme": "http",
+  "status": false,
+  "parameters": {
+    "env": "dev",
+    "tag": "RED"
+  }
+}
+
+
+### 取消注册一个实例
+POST http://localhost:8484/unreg?service=io.github.kimmking.kkrpc.UserService
+Content-Type: application/json
+
+{
+  "context": "kkrpc",
+  "host": "127.0.0.1",
+  "port": 8081,
+  "scheme": "http"
+}
