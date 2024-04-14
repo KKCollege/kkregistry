@@ -1,4 +1,4 @@
-package io.github.kimmking.kkregistry.health;
+package io.github.kimmking.kkregistry.health.http;
 
 import io.github.kimmking.kkregistry.health.http.HttpInvoker;
 import lombok.extern.slf4j.Slf4j;

@@ -1,7 +1,6 @@
 package io.github.kimmking.kkregistry.health.http;
 
 import com.alibaba.fastjson.JSON;
-import io.github.kimmking.kkregistry.health.OkHttpInvoker;
 import lombok.SneakyThrows;
 
 /**
