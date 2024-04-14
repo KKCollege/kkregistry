@@ -7,6 +7,6 @@ spring:
 
 registry:
     serverlist:
-        - http://192.168.110.220:8484
-        - http://192.168.110.220:8485
-        - http://192.168.110.220:8486
+        - http://localhost:8484
+        - http://localhost:8485
+        - http://localhost:8486

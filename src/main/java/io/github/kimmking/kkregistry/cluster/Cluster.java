@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.commons.util.InetUtils;
 import org.springframework.cloud.commons.util.InetUtilsProperties;
 
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,7 +75,7 @@ public class Cluster {
                 servers.add(MYSELF);
             } else {
                 Server server = new Server();
-                server.setUrl(url);
+                server.setUrl(convertLocalhost(url));
                 server.setStatus(false);
                 server.setLeader(false);
                 server.setVersion(-1);
@@ -88,15 +87,22 @@ public class Cluster {
         serverHealth.checkServerHealth();
     }
 
+    private String convertLocalhost(String url) {
+        if(url.contains("localhost")) {
+            return url.replace("localhost", ip);
+        } if(url.contains("127.0.0.1")) {
+            return url.replace("127.0.0.1", ip);
+        } else {
+            return url;
+        }
+    }
+
     public Server getLeader() {
         return this.servers.stream().filter(Server::isStatus)
                     .filter(Server::isLeader).findFirst().orElse(null);
     }
 
     public boolean isLeader() {
-        if(MYSELF==null) {
-            myself();
-        }
-        return MYSELF.isLeader();
+        return myself().isLeader();
     }
 }
