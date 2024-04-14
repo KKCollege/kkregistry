@@ -1,0 +1,79 @@
+### 注册一个实例1
+POST http://localhost:8484/reg?service=io.github.kimmking.kkrpc.UserService
+Content-Type: application/json
+
+{
+  "context": "kkrpc",
+  "host": "127.0.0.1",
+  "port": 8081,
+  "scheme": "http",
+  "status": false,
+  "parameters": {
+    "env": "dev",
+    "tag": "RED"
+  }
+}
+
+### 注册一个实例2
+POST http://localhost:8484/reg?service=io.github.kimmking.kkrpc.UserService
+Content-Type: application/json
+
+{
+  "context": "kkrpc",
+  "host": "127.0.0.1",
+  "port": 8082,
+  "scheme": "http",
+  "status": false,
+  "parameters": {
+    "env": "dev",
+    "tag": "RED"
+  }
+}
+
+### 注册一个实例3
+POST http://localhost:8484/reg?service=io.github.kimmking.kkrpc.UserService
+Content-Type: application/json
+
+{
+  "context": "kkrpc",
+  "host": "127.0.0.1",
+  "port": 8083,
+  "scheme": "http",
+  "status": false,
+  "parameters": {
+    "env": "dev",
+    "tag": "RED"
+  }
+}
+
+### 注册一个实例4
+POST http://localhost:8484/reg?service=io.github.kimmking.kkrpc.UserService
+Content-Type: application/json
+
+{
+  "context": "kkrpc",
+  "host": "127.0.0.1",
+  "port": 8084,
+  "scheme": "http",
+  "status": false,
+  "parameters": {
+    "env": "dev",
+    "tag": "RED"
+  }
+}
+
+### 注册一个实例5
+POST http://localhost:8484/reg?service=io.github.kimmking.kkrpc.UserService
+Content-Type: application/json
+
+{
+  "context": "kkrpc",
+  "host": "127.0.0.1",
+  "port": 8085,
+  "scheme": "http",
+  "status": false,
+  "parameters": {
+    "env": "dev",
+    "tag": "RED"
+  }
+}

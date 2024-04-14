@@ -1,7 +1,6 @@
 package io.github.kimmking.kkregistry.cluster;
 
 import io.github.kimmking.kkregistry.RegistryConfigProperties;
-import io.github.kimmking.kkregistry.health.OkHttpInvoker;
 import io.github.kimmking.kkregistry.service.KKRegistryService;
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -43,9 +42,6 @@ public class Cluster {
         }
     }
 
-    @Getter
-    OkHttpInvoker httpInvoker = new OkHttpInvoker(1000);
-
     @SneakyThrows
     public Server myself() { //192.168.110.220
         if(MYSELF == null) {
@@ -71,9 +67,12 @@ public class Cluster {
         myself();
         List<Server> servers = new ArrayList<>();
         for (String url : registryConfigProperties.getServerlist()){
-            if(MYSELF.getUrl().equals(url)) {
+            if(MYSELF.getUrl().equalsIgnoreCase(url)
+                    || MYSELF.getUrl().equals(convertLocalhost(url))) {
+                System.out.println("add myself to servers: " + MYSELF);
                 servers.add(MYSELF);
             } else {
+                System.out.println("add server to servers: " + url);
                 Server server = new Server();
                 server.setUrl(convertLocalhost(url));
                 server.setStatus(false);
@@ -83,6 +82,8 @@ public class Cluster {
             }
         }
         this.servers = servers;
+        System.out.println(" =======>>>>>> initialized, servers:" +servers);
+        System.out.println(" =======>>>>>> initialized, myself:" +myself());
         serverHealth = new ServerHealth(this);
         serverHealth.checkServerHealth();
     }

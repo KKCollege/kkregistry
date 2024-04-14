@@ -1,8 +1,7 @@
 package io.github.kimmking.kkregistry.cluster;
 
-import com.alibaba.fastjson.JSON;
+import io.github.kimmking.kkregistry.health.http.HttpInvoker;
 import io.github.kimmking.kkregistry.service.KKRegistryService;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -29,31 +28,37 @@ public class ServerHealth {
     public void checkServerHealth() {
         final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         executor.scheduleAtFixedRate( () -> {
-                    checkIsNeedElect();
-                    doElect();
-                    System.out.println(" ===*****%%%$$$>>> isLeader=" + cluster.isLeader()
-                            + ",myself-version=" + cluster.getMYSELF().getVersion()
-                            + ",leader-version=" + cluster.getLeader().getVersion());
-                    if(!cluster.isLeader() && cluster.getMYSELF().getVersion() < cluster.getLeader().getVersion()) {
-                        // 改成首次刷 TODO
-                        // 改成 判断版本号 TODO
-                        // 改成 判断LEADER是否改变 TODO
-                        // 把这个类拆分为多个类 TODO
-                        // 控制读写分离 TODO
-                        // 优化实时性同步 TODO
-                        System.out.println(" ===*****%%%$$$>>> syncFromLeader: " + cluster.getLeader());
-                        long v = syncFromLeader();
+                    try {
+                        updateServer();
+                        doElect();
+
+                        System.out.println(" ===*****%%%$$$>>> isLeader=" + cluster.isLeader()
+                                + ",myself-version=" + cluster.getMYSELF().getVersion()
+                                + ",leader-version=" + cluster.getLeader().getVersion());
+                        if (!cluster.isLeader() && cluster.getMYSELF().getVersion() < cluster.getLeader().getVersion()) {
+                            // 改成首次刷 TODO 优先级低
+                            // 改成 判断版本号 DONE
+                            // 改成 判断LEADER是否改变 DONE
+                            // 把这个类拆分为多个类 DONE
+                            // 控制读写分离 TODO 客户端
+                            // 优化实时性同步 TODO 优先级低
+                            System.out.println(" ===*****%%%$$$>>> syncFromLeader: " + cluster.getLeader());
+                            long v = syncSnapshotFromLeader();
+                            System.out.println(" ===*****%%%$$$>>> sync success new version: " + v);
+                        }
+                    } catch (Throwable t) {
+                        t.printStackTrace();
                     }
                 }
                 , 0, 5, java.util.concurrent.TimeUnit.SECONDS);
     }
 
-    private void checkIsNeedElect() {
+    private void updateServer() {
         long start = System.currentTimeMillis();
         cluster.getServers().stream()
                 .filter(s-> !s.equals(cluster.MYSELF))
-                .parallel().forEach(this::checkServerInfo);
-        System.out.println(" =====>>>>>> checkIsNeedElect: " + (System.currentTimeMillis() - start) + " ms");
+                .forEach(this::checkServerInfo);
+        System.out.println(" =====>>>>>> updateServer info: " + (System.currentTimeMillis() - start) + " ms");
     }
 
     private void doElect(){
@@ -72,7 +77,7 @@ public class ServerHealth {
 
     public void checkServerInfo(Server server) {
         try {
-            Server serverInfo = httpGet(server.getUrl()+"/info", Server.class);
+            Server serverInfo = HttpInvoker.httpGet(server.getUrl()+"/info", Server.class);
             log.info(" =========>>>>> health check success for {}.", server);
             if (!server.isStatus()) {
                 server.setStatus(true);
@@ -88,22 +93,15 @@ public class ServerHealth {
         }
     }
 
-    private long syncFromLeader() {
+    private long syncSnapshotFromLeader() {
         try {
-            Snapshot snapshot = httpGet(cluster.getLeader().getUrl() + "/snapshot", Snapshot.class);
+            log.info(" =========>>>>> syncSnapshotFromLeader {}", cluster.getLeader().getUrl() + "/snapshot");
+            Snapshot snapshot = HttpInvoker.httpGet(cluster.getLeader().getUrl() + "/snapshot", Snapshot.class);
             return KKRegistryService.restore(snapshot);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error(" =========>>>>> syncSnapshotFromLeader failed.", ex);
         }
         return -1;
-    }
-
-    @SneakyThrows
-    public <T> T httpGet(String url,  Class<T> clazz) {
-            System.out.println(" =====>>>>>> query: " + url);
-            String respJson = cluster.getHttpInvoker().post("", url);
-            System.out.println(" =====>>>>>> respJson: " + respJson);
-            return JSON.parseObject(respJson, clazz);
     }
 
 }
