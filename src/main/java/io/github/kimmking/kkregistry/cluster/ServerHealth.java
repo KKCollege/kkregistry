@@ -32,7 +32,7 @@ public class ServerHealth {
                         updateServer();
                         doElect();
 
-                        System.out.println(" ===*****%%%$$$>>> isLeader=" + cluster.isLeader()
+                        log.debug(" ===*****%%%$$$>>> isLeader=" + cluster.isLeader()
                                 + ",myself-version=" + cluster.getMYSELF().getVersion()
                                 + ",leader-version=" + cluster.getLeader().getVersion());
                         if (!cluster.isLeader() && cluster.getMYSELF().getVersion() < cluster.getLeader().getVersion()) {
@@ -42,9 +42,9 @@ public class ServerHealth {
                             // 把这个类拆分为多个类 DONE
                             // 控制读写分离 TODO 客户端
                             // 优化实时性同步 TODO 优先级低
-                            System.out.println(" ===*****%%%$$$>>> syncFromLeader: " + cluster.getLeader());
+                            log.debug(" ===*****%%%$$$>>> syncFromLeader: " + cluster.getLeader());
                             long v = syncSnapshotFromLeader();
-                            System.out.println(" ===*****%%%$$$>>> sync success new version: " + v);
+                            log.debug(" ===*****%%%$$$>>> sync success new version: " + v);
                         }
                     } catch (Throwable t) {
                         t.printStackTrace();
@@ -58,7 +58,7 @@ public class ServerHealth {
         cluster.getServers().stream()
                 .filter(s-> !s.equals(cluster.MYSELF))
                 .forEach(this::checkServerInfo);
-        System.out.println(" =====>>>>>> updateServer info: " + (System.currentTimeMillis() - start) + " ms");
+        log.debug(" =====>>>>>> updateServer info: " + (System.currentTimeMillis() - start) + " ms");
     }
 
     private void doElect(){
@@ -67,10 +67,10 @@ public class ServerHealth {
         List<Server> masters = servers.stream().filter(Server::isStatus)
                 .filter(Server::isLeader).collect(Collectors.toList());
             if (masters.isEmpty()) {
-                log.error(" =========>>>>> ELECT: no masters: {}", servers);
+                log.warn(" =========>>>>> ELECT: no masters: {}", servers);
                 election.elect(cluster.myself(), servers);
             } else if (masters.size() > 1) {
-                log.error(" =========>>>>> ELECT: more than one master: {}", masters);
+                log.warn(" =========>>>>> ELECT: more than one master: {}", masters);
                 election.elect(cluster.myself(), servers);
             }
     }
@@ -85,7 +85,7 @@ public class ServerHealth {
             server.setVersion(serverInfo.getVersion());
             server.setLeader(serverInfo.isLeader());
         } catch (RuntimeException ex) {
-            log.error(" =========>>>>> health check failed for {}", server);//, ex);
+            log.warn(" =========>>>>> health check failed for {}", server);//, ex);
             if(server.isStatus()) {
                 server.setStatus(false);
                 server.setLeader(false);
