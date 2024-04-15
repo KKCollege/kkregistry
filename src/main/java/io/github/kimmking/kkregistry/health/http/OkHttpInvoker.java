@@ -1,6 +1,6 @@
 package io.github.kimmking.kkregistry.health.http;
 
-import io.github.kimmking.kkregistry.health.http.HttpInvoker;
+import io.github.kimmking.kkregistry.health.HttpInvoker;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 

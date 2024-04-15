@@ -1,6 +1,6 @@
 package io.github.kimmking.kkregistry.cluster;
 
-import io.github.kimmking.kkregistry.health.http.HttpInvoker;
+import io.github.kimmking.kkregistry.health.HttpInvoker;
 import io.github.kimmking.kkregistry.service.KKRegistryService;
 import lombok.extern.slf4j.Slf4j;
 

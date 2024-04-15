@@ -1,6 +1,7 @@
-package io.github.kimmking.kkregistry.health.http;
+package io.github.kimmking.kkregistry.health;
 
 import com.alibaba.fastjson.JSON;
+import io.github.kimmking.kkregistry.health.http.OkHttpInvoker;
 import lombok.SneakyThrows;
 
 /**
@@ -11,7 +12,7 @@ import lombok.SneakyThrows;
  */
 public interface HttpInvoker {
 
-    HttpInvoker Default = new OkHttpInvoker(300);
+    HttpInvoker Default = new OkHttpInvoker(500);
 
     String post(String rpcRequest, String url);
 
