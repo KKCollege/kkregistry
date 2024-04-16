@@ -1,5 +1,6 @@
 package io.github.kimmking.kkregistry;
 
+import io.github.kimmking.kkregistry.cluster.Cluster;
 import io.github.kimmking.kkregistry.health.HealthChecker;
 import io.github.kimmking.kkregistry.health.KKHealthChecker;
 import io.github.kimmking.kkregistry.service.KKRegistryService;
@@ -24,9 +25,14 @@ public class KKRegistryConfig {
         return new KKRegistryService();
     }
 
-    @Bean(initMethod = "start", destroyMethod = "stop")
-    public HealthChecker healthChecker(@Autowired RegistryService registryService) {
-        return new KKHealthChecker(registryService);
+//    @Bean(initMethod = "start", destroyMethod = "stop")
+//    public HealthChecker healthChecker(@Autowired RegistryService registryService) {
+//        return new KKHealthChecker(registryService);
+//    }
+
+    @Bean(initMethod = "init")
+    public Cluster cluster(@Autowired KKRegistryConfigProperties registryConfigProperties) {
+        return new Cluster(registryConfigProperties);
     }
 
 }
