@@ -2,7 +2,9 @@ package io.github.kimmking.kkregistry;
 
 import io.github.kimmking.kkregistry.cluster.Cluster;
 import io.github.kimmking.kkregistry.cluster.Server;
+import io.github.kimmking.kkregistry.cluster.Snapshot;
 import io.github.kimmking.kkregistry.model.InstanceMeta;
+import io.github.kimmking.kkregistry.service.KKRegistryService;
 import io.github.kimmking.kkregistry.service.RegistryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,13 +37,21 @@ public class KKRegistryController {
     public InstanceMeta register(@RequestParam String service, @RequestBody InstanceMeta instance)
     {
         log.info(" ===> register {} @ {}", service, instance);
+        checkLeader();
         return registryService.register(service, instance);
+    }
+
+    private void checkLeader() {
+        if(!cluster.self().isLeader()) {
+            throw new RuntimeException("current server is not a leader, the leader is " + cluster.leader().getUrl());
+        }
     }
 
     @RequestMapping("/unreg")
     public InstanceMeta unregister(@RequestParam String service, @RequestBody InstanceMeta instance)
     {
         log.info(" ===> unregister {} @ {}", service, instance);
+        checkLeader();
         return registryService.unregister(service, instance);
     }
 
@@ -57,6 +67,7 @@ public class KKRegistryController {
     public long renew(@RequestParam String service, @RequestBody InstanceMeta instance)
     {
         log.info(" ===> renew {} @ {}", service, instance);
+        checkLeader();
         return registryService.renew(instance, service);
     }
 
@@ -64,6 +75,7 @@ public class KKRegistryController {
     public long renews(@RequestParam String services, @RequestBody InstanceMeta instance)
     {
         log.info(" ===> renew {} @ {}", services, instance);
+        checkLeader();
         return registryService.renew(instance, services.split(","));
     }
 
@@ -108,6 +120,11 @@ public class KKRegistryController {
         cluster.self().setLeader(true);
         log.info(" ===> leader: {}", cluster.self());
         return cluster.self();
+    }
+
+    @RequestMapping("/snapshot")
+    public Snapshot snapshot() {
+        return KKRegistryService.snapshot();
     }
 
 

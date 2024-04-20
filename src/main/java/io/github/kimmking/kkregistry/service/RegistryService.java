@@ -1,5 +1,6 @@
 package io.github.kimmking.kkregistry.service;
 
+import io.github.kimmking.kkregistry.cluster.Snapshot;
 import io.github.kimmking.kkregistry.model.InstanceMeta;
 
 import java.util.List;
