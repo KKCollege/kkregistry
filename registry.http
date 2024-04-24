@@ -59,3 +59,7 @@ GET http://localhost:8485/sl
 
 ### snapshot 8484
 GET http://localhost:8484/snapshot
+
+
+### get all inst
+GET http://localhost:8484/findAll?service=app1_public_dev_cn.kimmking.kkrpc.demo.api.OrderService
